@@ -6,6 +6,7 @@ import { useAuth } from "../contexts/AuthContext"
 import { ArrowLeftCircle, Upload, X, Video, Play, StopCircle, Pause } from "lucide-react"
 import { getApplicationSections, saveApplicationSection, uploadVideo, submitApplication, markApplicationCompleted } from "../services/api";
 import ProgressBar from "./ProgressBar"
+import { toast } from "react-toastify";
 
 const ApplicationForm = () => {
   const navigate = useNavigate()
@@ -101,6 +102,7 @@ const ApplicationForm = () => {
     } catch (error) {
       console.error('Error starting recording:', error)
       alert('Could not access camera/microphone. Please check permissions.')
+      toast.error('Could not access camera/microphone. Please check permissions.');
     }
   }
 
@@ -252,6 +254,7 @@ const ApplicationForm = () => {
   const handleNext = async () => {
     if (!token) {
       setApiError("Session expired. Please log in again.");
+      toast.error("Session expired. Please log in again.");
       navigate("/auth");
       return;
     }
@@ -270,20 +273,25 @@ const ApplicationForm = () => {
           await markApplicationCompleted(userId, "In Review", token);
           setIsApplicationCompleted(true);
           setApplicationStatus("In Review");
+          toast.success("Application submitted successfully!");
         } catch (err) {
           if (err.status === 401) {
             setApiError("Session expired. Please log in again.");
+            toast.error("Session expired. Please log in again.");
             navigate("/auth");
             return;
           }
           setApiError("Could not mark as completed, but your application was submitted.");
+          toast.warn("Could not mark as completed, but your application was submitted.");
         }
         navigate('/dashboard');
       } else {
+        toast.success("Section saved!");
         navigate(`/application/${currentStep + 1}`);
       }
     } catch (error) {
       setApiError(error.message || "Failed to save section");
+      toast.error(error.message || "Failed to save section");
       // Do NOT navigate to step 1 here!
     }
   };

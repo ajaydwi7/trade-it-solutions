@@ -14,6 +14,8 @@ import ApplicationForm from './components/ApplicationForm'
 import Dashboard from './components/Dashboard'
 import LoadingScreen from './components/LoadingScreen'
 import './App.css'
+import { ToastContainer } from 'react-toastify'
+import 'react-toastify/dist/ReactToastify.css'
 
 function App() {
   return (
@@ -90,6 +92,7 @@ function App() {
             {/* Catch all route - redirect to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <ToastContainer position="top-right" autoClose={3000} />
         </div>
       </AuthProvider>
     </Router>

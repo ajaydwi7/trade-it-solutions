@@ -18,10 +18,26 @@ import {
   Phone,
   MapPin
 } from "lucide-react"
+import { getApplication } from "../services/api"
 
 const Dashboard = () => {
   const navigate = useNavigate()
-  const { user, formData, applicationStatus, logout } = useAuth()
+  const { user, formData, applicationStatus, logout, token } = useAuth()
+  const [profilePhoto, setProfilePhoto] = useState(null)
+
+  useEffect(() => {
+    const fetchProfilePhoto = async () => {
+      if (user?._id && token) {
+        try {
+          const application = await getApplication(user._id, token)
+          setProfilePhoto(application.application?.optional?.profilePhoto || null);
+        } catch (e) {
+          setProfilePhoto(null)
+        }
+      }
+    }
+    fetchProfilePhoto()
+  }, [user, token])
 
   const getStatusIcon = (status) => {
     switch (status) {
@@ -90,30 +106,43 @@ const Dashboard = () => {
   }
 
   const calculateProfileCompletion = () => {
-    let completed = 0
-    let total = 0
+    let completed = 0;
+    let total = 0;
 
-    // Check basic info
-    if (formData.name) completed++
-    total++
-    if (formData.email) completed++
-    total++
-    if (formData.phone) completed++
-    total++
-    if (formData.address) completed++
-    total++
+    // --- Personal Info Step ---
+    if (formData.name) completed++;
+    total++;
+    if (formData.email) completed++;
+    total++;
+    if (formData.phone) completed++;
+    total++;
+    if (formData.address) completed++;
+    total++;
 
-    // Check application sections
-    if (formData.warmUp.animal) completed++
-    total++
-    if (formData.commitment.canCommit) completed++
-    total++
-    if (formData.purpose.whyTrade) completed++
-    total++
-    if (formData.exclusivity.preparedInvestment) completed++
-    total++
+    // --- Terms Step ---
+    if (formData.agreedToTerms) completed++;
+    total++;
 
-    return Math.round((completed / total) * 100)
+    // --- Auth Step ---
+    // If user is registered, count as complete
+    if (user && user._id) completed++;
+    total++;
+
+    // --- Application Form Steps ---
+    if (formData.warmUp?.animalQuestion) completed++;
+    total++;
+    if (formData.commitment?.canCommit) completed++;
+    total++;
+    if (formData.purpose?.whyTrade) completed++;
+    total++;
+    if (formData.exclusivity?.preparedInvestment) completed++;
+    total++;
+
+    // Optional: Profile Photo (uncomment if you want to count it)
+    // if (formData.profilePhoto) completed++;
+    // total++;
+
+    return Math.round((completed / total) * 100);
   }
 
   return (
@@ -140,8 +169,16 @@ const Dashboard = () => {
           {/* Profile Section */}
           <div className="mb-8">
             <div className="flex items-center mb-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center mr-4">
-                <UserCircle className="w-10 h-10 text-white" />
+              <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-pink-500 rounded-full flex items-center justify-center mr-4 overflow-hidden">
+                {profilePhoto ? (
+                  <img
+                    src={profilePhoto}
+                    alt="Profile"
+                    className="w-16 h-16 object-cover rounded-full"
+                  />
+                ) : (
+                  <UserCircle className="w-10 h-10 text-white" />
+                )}
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-white">
@@ -251,7 +288,9 @@ const Dashboard = () => {
                     <div>
                       <p className="text-gray-400 text-sm">Full Name</p>
                       <p className="text-white font-medium">
-                        {formData.name || "Not provided"}
+                        {user?.firstName && user?.lastName
+                          ? `${user.firstName} ${user.lastName}`
+                          : "Not provided"}
                       </p>
                     </div>
                   </div>
@@ -261,7 +300,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-gray-400 text-sm">Email</p>
                       <p className="text-white font-medium">
-                        {formData.email || user?.email || "Not provided"}
+                        {user?.email || "Not provided"}
                       </p>
                     </div>
                   </div>
@@ -273,7 +312,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-gray-400 text-sm">Phone</p>
                       <p className="text-white font-medium">
-                        {formData.phone || "Not provided"}
+                        {user?.phone || "Not provided"}
                       </p>
                     </div>
                   </div>
@@ -283,7 +322,7 @@ const Dashboard = () => {
                     <div>
                       <p className="text-gray-400 text-sm">Location</p>
                       <p className="text-white font-medium">
-                        {formData.address || "Not provided"}
+                        {user?.address || "Not provided"}
                       </p>
                     </div>
                   </div>

@@ -4,7 +4,7 @@ import Application from "../models/Application.js";
 
 export const registerUser = async (req, res) => {
   try {
-    const { firstName, lastName, email, password } = req.body;
+    const { firstName, lastName, email, password, phone, address } = req.body;
 
     // Check if user exists
     const userExists = await User.findOne({ email });
@@ -18,6 +18,8 @@ export const registerUser = async (req, res) => {
       lastName,
       email,
       password,
+      phone,
+      address,
     });
 
     if (user) {

@@ -21,6 +21,12 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    phone: {
+      type: String,
+    },
+    address: {
+      type: String,
+    },
     profileComplete: {
       type: Boolean,
       default: false,

@@ -188,3 +188,13 @@ export const markApplicationCompleted = async (
     token
   );
 };
+
+// src/services/api.js
+export const getApplication = async (userId, token) => {
+  return authenticatedRequest(
+    `${API_BASE_URL}/applications/user/${userId}`,
+    "GET",
+    null,
+    token
+  );
+};

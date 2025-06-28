@@ -6,11 +6,12 @@ import { useAuth } from "../contexts/AuthContext"
 import { ArrowLeftCircle, Mail, Eye, EyeOff } from "lucide-react"
 import { register, login } from "../services/api";
 import ProgressBar from "./ProgressBar"
+import { toast } from 'react-toastify';
 
 const AuthStep = () => {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login: authLogin } = useAuth()
+  const { login: authLogin, formData: authFormData } = useAuth()
 
   // Check if user came from student login (should default to sign in)
   const cameFromStudentLogin = location.pathname === '/auth' && !location.state?.from
@@ -19,9 +20,11 @@ const AuthStep = () => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: authFormData.name?.split(" ")[0] || "",
+    lastName: authFormData.name?.split(" ")[1] || "",
+    email: authFormData.email || "",
+    phone: authFormData.phone || "",
+    address: authFormData.address || "",
     password: "",
     confirmPassword: "",
     agreeToTerms: false,
@@ -41,6 +44,16 @@ const AuthStep = () => {
 
     // Basic validation
     if (isSignUp) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        setError("Please enter a valid email address");
+        setLoading(false);
+        return;
+      }
+      if (formData.password.length < 6) {
+        setError("Password must be at least 6 characters");
+        setLoading(false);
+        return;
+      }
       if (formData.password !== formData.confirmPassword) {
         setError("Passwords don't match")
         setLoading(false)
@@ -60,14 +73,23 @@ const AuthStep = () => {
           firstName: formData.firstName,
           lastName: formData.lastName,
           email: formData.email,
+          phone: formData.phone,
+          address: formData.address,
           password: formData.password
         });
 
         if (result.userId) {
           setError(null);
           setLoading(false);
-          alert("Registration successful! Please log in to continue.");
-          navigate("/auth");
+          toast.success("Registration successful! Please log in to continue.");
+          setIsSignUp(false); // Switch to login form
+          // Optionally, prefill email
+          setFormData((prev) => ({
+            ...prev,
+            password: "",
+            confirmPassword: "",
+            agreeToTerms: false,
+          }));
           return;
         } else {
           setError(result.error || "Registration failed. Please try again.");

@@ -79,7 +79,7 @@ export const AuthProvider = ({ children }) => {
           setApplicationStatus(null)
         }
       }
-      setIsLoading(false) // <-- Move this here, after all async logic
+      setIsLoading(false)
     }
 
     initializeAuth()
