@@ -1,12 +1,15 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
-import { ArrowLeftCircle, Mail, Eye, EyeOff } from "lucide-react"
-import { register, login } from "../services/api";
-import ProgressBar from "./ProgressBar"
-import { toast } from 'react-toastify';
+import { ArrowLeftCircle, Mail, Eye, EyeOff, Apple } from "lucide-react"
+import { register, login } from "../services/api"
+import { toast } from "react-toastify"
+import { GoogleLogin } from "@react-oauth/google"
+import ProgressBar from "./ProgressBar";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL
 
 const AuthStep = () => {
   const navigate = useNavigate()
@@ -14,9 +17,10 @@ const AuthStep = () => {
   const { login: authLogin, formData: authFormData } = useAuth()
 
   // Check if user came from student login (should default to sign in)
-  const cameFromStudentLogin = location.pathname === '/auth' && !location.state?.from
+  const cameFromStudentLogin = location.pathname === "/auth" && !location.state?.from
   const [isSignUp, setIsSignUp] = useState(!cameFromStudentLogin)
   const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [formData, setFormData] = useState({
@@ -45,14 +49,14 @@ const AuthStep = () => {
     // Basic validation
     if (isSignUp) {
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        setError("Please enter a valid email address");
-        setLoading(false);
-        return;
+        setError("Please enter a valid email address")
+        setLoading(false)
+        return
       }
       if (formData.password.length < 6) {
-        setError("Password must be at least 6 characters");
-        setLoading(false);
-        return;
+        setError("Password must be at least 6 characters")
+        setLoading(false)
+        return
       }
       if (formData.password !== formData.confirmPassword) {
         setError("Passwords don't match")
@@ -75,60 +79,80 @@ const AuthStep = () => {
           email: formData.email,
           phone: formData.phone,
           address: formData.address,
-          password: formData.password
-        });
+          password: formData.password,
+        })
 
         if (result.userId) {
-          setError(null);
-          setLoading(false);
-          toast.success("Registration successful! Please log in to continue.");
-          setIsSignUp(false); // Switch to login form
-          // Optionally, prefill email
+          setError(null)
+          setLoading(false)
+          toast.success("Registration successful! Please log in to continue.")
+          setIsSignUp(false)
           setFormData((prev) => ({
             ...prev,
             password: "",
             confirmPassword: "",
             agreeToTerms: false,
-          }));
-          return;
+          }))
+          return
         } else {
-          setError(result.error || "Registration failed. Please try again.");
-          setLoading(false);
-          return;
+          setError(result.error || "Registration failed. Please try again.")
+          setLoading(false)
+          return
         }
       } else {
         result = await login({
           email: formData.email,
-          password: formData.password
-        });
+          password: formData.password,
+        })
       }
 
       if (result.token && result.userId) {
-        await authLogin(result.token, result.userId);
+        await authLogin(result.token, result.userId)
       } else {
-        setError(result.error || "Authentication failed. Please try again.");
+        // Show user-friendly error for login failure
+        setError("Invalid email or password")
       }
     } catch (err) {
-      setError(err.message || "Authentication failed");
+      // Show user-friendly error for login failure
+      setError("Invalid email or password")
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handlePrev = () => {
     if (cameFromStudentLogin) {
-      navigate('/')
+      navigate("/")
     } else {
-      navigate('/onboarding/terms')
+      navigate("/onboarding/terms")
     }
   }
 
   const showTermsConditions = () => {
-    navigate('/terms-conditions')
+    navigate("/terms-conditions")
+  }
+
+  const handleGoogleSuccess = async (credentialResponse) => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ credential: credentialResponse.credential }),
+      })
+      const result = await res.json()
+      if (result.token && result.userId) {
+        await authLogin(result.token, result.userId)
+        toast.success("Logged in with Google!")
+      } else {
+        toast.error(result.error || "Google authentication failed")
+      }
+    } catch (err) {
+      toast.error("Google authentication failed")
+    }
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+    <div className="min-h-screen bg-neutral-900 relative overflow-hidden">
       {/* Background Images */}
       <div className="absolute inset-0 hidden md:block">
         <img
@@ -146,50 +170,63 @@ const AuthStep = () => {
       </div>
 
       <div className="relative z-10">
-        {!cameFromStudentLogin && <ProgressBar progress={50} />}
+        {/* Progress bar for Auth step (Step 3 of 4 = 75%) */}
+        <ProgressBar progress={75} showPercent={true} />
 
+        {/* Error notification */}
         {error && (
-          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-50">
+          <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-lg z-50 shadow-lg">
             {error}
           </div>
         )}
+        {/* Main form container */}
+        <div className="flex items-center justify-center min-h-screen p-8">
+          <div className="w-full max-w-lg">
+            {/* Step Indicator */}
+            <div className="flex items-center text-white mb-16">
+              <button onClick={handlePrev} className="flex items-center justify-center rounded-full mr-3">
+                <ArrowLeftCircle className="w-8 h-8" />
+              </button>
+              <span className="text-sm">Step 3 of 4</span>
+            </div>
+            {/* Form card */}
+            <div className="bg-black/20 backdrop-blur-2xl border border-indigo-500/50 rounded-3xl p-10 shadow-2xl">
+              <div className="space-y-6">
+                {/* Header */}
+                <div className="space-y-2">
+                  <h1 className="text-4xl font-normal text-white leading-[50px]">
+                    {isSignUp ? "Create an Account" : "Sign In"}
+                  </h1>
+                  <p className="text-xl font-normal text-white leading-normal">
+                    {isSignUp ? (
+                      <>
+                        Already have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => setIsSignUp(false)}
+                          className="text-indigo-500 underline hover:text-indigo-400"
+                        >
+                          Sign in
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        Don't have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => setIsSignUp(true)}
+                          className="text-indigo-500 underline hover:text-indigo-400"
+                        >
+                          Create Account
+                        </button>
+                      </>
+                    )}
+                  </p>
+                </div>
 
-        <div className="min-h-screen flex flex-col justify-center px-4 py-8">
-          <div className="flex-1 flex items-center justify-center">
-            <div className="w-full max-w-md">
-              {/* Step Indicator */}
-              <div className="flex items-center mb-16 text-white">
-                <button onClick={handlePrev} className="flex items-center justify-center rounded-full mr-3">
-                  <ArrowLeftCircle className="w-8 h-8" />
-                </button>
-                {!cameFromStudentLogin && <span className="text-sm">Step 3 of 4</span>}
-              </div>
-
-              {/* Auth Form */}
-              <div className="bg-gray-800 bg-opacity-30 backdrop-blur-sm rounded-2xl p-8 border border-gray-700">
-                <h1 className="text-3xl font-bold text-white mb-2">
-                  {isSignUp ? "Create an Account" : "Sign In"}
-                </h1>
-
-                <p className="text-gray-300 mb-8">
-                  {isSignUp ? (
-                    <>
-                      Already have an account?{" "}
-                      <button type="button" onClick={() => setIsSignUp(false)} className="text-blue-400 hover:underline">
-                        Sign In
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      Don't have an account?{" "}
-                      <button type="button" onClick={() => setIsSignUp(true)} className="text-blue-400 hover:underline">
-                        Create Account
-                      </button>
-                    </>
-                  )}
-                </p>
-
+                {/* Form fields */}
                 <form onSubmit={handleSubmit} className="space-y-4">
+                  {/* Name fields for sign up */}
                   {isSignUp && (
                     <div className="grid grid-cols-2 gap-4">
                       <input
@@ -197,7 +234,7 @@ const AuthStep = () => {
                         placeholder="First name"
                         value={formData.firstName}
                         onChange={(e) => handleInputChange("firstName", e.target.value)}
-                        className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="bg-gradient-to-r from-[#5558B9] to-purple-500 border border-indigo-700/50 text-white placeholder:text-gray-600 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-lg px-5 py-4 text-lg font-medium focus:outline-none focus:ring-1"
                         required
                       />
                       <input
@@ -205,31 +242,39 @@ const AuthStep = () => {
                         placeholder="Last name"
                         value={formData.lastName}
                         onChange={(e) => handleInputChange("lastName", e.target.value)}
-                        className="bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        className="bg-indigo-700/50 border border-indigo-700/50 text-white placeholder:text-gray-600 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-lg px-5 py-4 text-lg font-medium focus:outline-none focus:ring-1"
                         required
                       />
                     </div>
                   )}
 
+                  {/* Email field */}
                   <div className="relative">
                     <input
                       type="email"
                       placeholder="Email"
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
-                      className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-indigo-700/50 border border-indigo-700/50 text-white placeholder:text-gray-600 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-lg px-5 py-4 pr-12 text-lg font-medium focus:outline-none focus:ring-1"
                       required
                     />
-                    <Mail className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                    {!isSignUp && (
+                      <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                        <div className="bg-indigo-500 rounded-md p-1.5 shadow-[0px_0px_40px_0px_rgba(88,93,239,1.00)]">
+                          <Mail className="w-4 h-4 text-white" />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
+                  {/* Password field */}
                   <div className="relative">
                     <input
                       type={showPassword ? "text" : "password"}
                       placeholder={isSignUp ? "Enter your password" : "Password"}
                       value={formData.password}
                       onChange={(e) => handleInputChange("password", e.target.value)}
-                      className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-4 py-3 pr-12 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                      className="w-full bg-indigo-700/50 border border-indigo-700/50 text-white placeholder:text-gray-600 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-lg px-5 py-4 pr-12 text-lg font-medium focus:outline-none focus:ring-1"
                       required
                     />
                     <button
@@ -241,100 +286,132 @@ const AuthStep = () => {
                     </button>
                   </div>
 
+                  {/* Confirm password field for sign up */}
                   {isSignUp && (
-                    <input
-                      type="password"
-                      placeholder="Confirm your password"
-                      value={formData.confirmPassword}
-                      onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                      className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                      required
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="Confirm your password"
+                        value={formData.confirmPassword}
+                        onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
+                        className="w-full bg-indigo-700/50 border border-indigo-700/50 text-white placeholder:text-gray-600 focus:border-indigo-600 focus:ring-indigo-600/20 rounded-lg px-5 py-4 pr-12 text-lg font-medium focus:outline-none focus:ring-1"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white"
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                   )}
 
+                  {/* Forgot password for sign in */}
                   {!isSignUp && (
-                    <div className="text-right">
-                      <button type="button" className="text-gray-400 hover:text-white text-sm">
+                    <div className="text-left">
+                      <button type="button" className="text-white text-base font-medium hover:text-gray-300">
                         Forgot password?
                       </button>
                     </div>
                   )}
 
+                  {/* Terms checkbox for sign up */}
                   {isSignUp && (
-                    <div className="flex items-center">
+                    <div className="flex items-center space-x-3">
                       <input
                         type="checkbox"
                         id="terms"
                         checked={formData.agreeToTerms}
                         onChange={(e) => handleInputChange("agreeToTerms", e.target.checked)}
-                        className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500"
+                        className="w-5 h-5 text-indigo-600 bg-white border-zinc-300 rounded focus:ring-indigo-500 focus:ring-2"
                         required
                       />
-                      <label htmlFor="terms" className="ml-2 text-sm text-gray-300">
+                      <label htmlFor="terms" className="text-base font-medium text-white">
                         I agree to the{" "}
-                        <button type="button" onClick={showTermsConditions} className="text-blue-400 hover:underline">
+                        <button
+                          type="button"
+                          onClick={showTermsConditions}
+                          className="text-indigo-500 underline hover:text-indigo-400"
+                        >
                           Terms & Condition
                         </button>
                       </label>
                     </div>
                   )}
 
+                  {/* Submit button */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className={`w-full bg-blue-600 text-white rounded-lg px-4 py-3 hover:bg-blue-700 transition-colors font-medium ${loading ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className={`w-full bg-indigo-500 hover:bg-indigo-600 text-white font-medium text-xl py-4 rounded-lg transition-colors ${loading ? "opacity-70 cursor-not-allowed" : ""
+                      }`}
                   >
                     {loading ? (
                       <span className="flex items-center justify-center">
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8z"></path>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c4.418 0 8 3.582 8 8s-3.582 8-8 8-8-3.582-8-8z"
+                          ></path>
                         </svg>
                         Processing...
                       </span>
+                    ) : isSignUp ? (
+                      "Create account"
                     ) : (
-                      isSignUp ? "Create Account" : "Sign In"
+                      "Sign In"
                     )}
                   </button>
                 </form>
 
-                {/* Social Login Buttons */}
-                <div className="text-center text-gray-400 mt-4">or</div>
+                {/* Divider */}
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-600" />
+                  </div>
+                  <div className="relative flex justify-center text-base font-normal">
+                    <span className="bg-black/20 px-2 text-white">or</span>
+                  </div>
+                </div>
 
-                <div className="space-y-3 mt-4">
-                  <button
-                    type="button"
-                    className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg px-4 py-3 hover:bg-gray-600 transition-colors flex items-center justify-center"
-                  >
-                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                      />
-                      <path
-                        fill="currentColor"
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                      />
-                    </svg>
-                    Sign in with Google
-                  </button>
+                {/* Social login buttons */}
+                <div className="grid grid-cols-2 gap-4">
+                  {/* Custom styled Google Login */}
+                  <div className="google-login-wrapper">
+                    <GoogleLogin
+                      onSuccess={handleGoogleSuccess}
+                      onError={() => {
+                        toast.error("Google authentication failed")
+                      }}
+                      theme="filled_black"
+                      text="signin_with"
+                      shape="rectangular"
+                      size="large"
+                      width="240"
+                    />
+                  </div>
 
                   <button
                     type="button"
-                    className="w-full bg-gray-700 bg-opacity-50 border border-gray-600 text-white rounded-lg px-4 py-3 hover:bg-gray-600 transition-colors flex items-center justify-center"
+                    className="bg-zinc-950 border border-slate-500 text-white hover:bg-zinc-800 flex items-center justify-center gap-2 py-3.5 px-4 rounded-lg transition-colors shadow-[0px_5px_40px_0px_rgba(0,0,0,0.05)]"
                   >
-                    <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z" />
-                    </svg>
-                    Log in with Apple
+                    <Apple className="w-6 h-6" />
+                    <span className="text-base font-medium">Log in with Apple</span>
                   </button>
                 </div>
               </div>
@@ -342,6 +419,45 @@ const AuthStep = () => {
           </div>
         </div>
       </div>
+
+      {/* Custom CSS for Google Login styling */}
+      <style>{`
+        .google-login-wrapper {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        
+        .google-login-wrapper > div {
+          width: 100% !important;
+        }
+        
+        .google-login-wrapper iframe {
+          width: 100% !important;
+          height: 56px !important;
+          border-radius: 8px !important;
+        }
+        
+        .google-login-wrapper [role="button"] {
+          width: 100% !important;
+          height: 56px !important;
+          background-color: #09090b !important;
+          border: 1px solid #64748b !important;
+          border-radius: 8px !important;
+          box-shadow: 0px 5px 40px 0px rgba(0,0,0,0.05) !important;
+          transition: background-color 0.2s ease !important;
+        }
+        
+        .google-login-wrapper [role="button"]:hover {
+          background-color: #27272a !important;
+        }
+        
+        .google-login-wrapper [role="button"] span {
+          font-size: 16px !important;
+          font-weight: 500 !important;
+          color: white !important;
+        }
+      `}</style>
     </div>
   )
 }

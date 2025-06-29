@@ -1,260 +1,388 @@
 "use client"
 
-import React, { useState } from "react"
+import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { ArrowLeftCircle } from "lucide-react"
-import ProgressBar from "./ProgressBar"
-import PricingCard from "./PricingCard" // Assuming this component is correctly styled as per your old code
+import { ArrowLeft } from "lucide-react"
 
 const TermsAndPricingStep = () => {
   const navigate = useNavigate()
-  const [selectedPlan, setSelectedPlan] = useState(null) // State to manage selected plan
+  const [selectedPlan, setSelectedPlan] = useState(null)
 
   const handleNext = () => {
-    // You might want to add validation here to ensure a plan is selected
-    // before navigating to /auth
-    navigate('/auth')
+    navigate("/auth")
   }
 
   const handlePrev = () => {
-    navigate('/onboarding/personal-info/4') // Navigate back to the last personal info step
+    navigate("/onboarding/personal-info/4")
   }
 
-  // Pricing plans from your old codebase
   const plans = [
     {
       id: "basic",
       name: "Basic",
       price: 0,
       features: [
-        "Designed for individuals, non-commercial use",
-        "Includes access to core services",
+        "Designed for individual, non-commercial use.",
+        "Includes access to core services, such as:",
         "Limited access to online educational resources",
-        "Basic community features",
-        "A restricted social network profile"
+        "Basic trading tools",
+        "A restricted social network profile",
       ],
-      bgColor: "bg-gray-700",
-      textColor: "text-gray-300",
-      borderColor: "border-gray-600"
     },
     {
       id: "premium",
       name: "Premium",
       price: 299,
       features: [
-        "Designed for individuals, non-commercial use",
-        "Includes access to core services",
+        "Designed for individual, non-commercial use.",
+        "Includes access to core services, such as:",
         "Limited access to online educational resources",
         "Basic trading tools",
-        "A restricted social network profile"
+        "A restricted social network profile",
       ],
-      bgColor: "bg-blue-600",
-      textColor: "text-white",
-      borderColor: "border-blue-500"
     },
     {
-      id: "elite",
-      name: "Elite",
+      id: "class",
+      name: "Class",
       price: 999,
       features: [
-        "Designed for individuals, non-commercial use",
-        "Includes access to core services",
+        "Designed for individual, non-commercial use.",
+        "Includes access to core services, such as:",
         "Limited access to online educational resources",
-        "Advanced trading tools",
-        "A restricted social network profile"
+        "Basic trading tools",
+        "A restricted social network profile",
       ],
-      bgColor: "bg-gray-700",
-      textColor: "text-gray-300",
-      borderColor: "border-gray-600"
-    }
-  ];
+    },
+  ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
-      {/* Background Images */}
-      <div className="absolute inset-0 md:block">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/WEB%20BACKGROUND.png-OZ4OMdtxyVzgNZTsKH6DnBI8zA47Ol.jpeg"
-          alt="Background"
-          className="w-full h-full object-cover"
-        />
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: "#101019" }}>
+      {/* Progress bar */}
+      <div className="absolute top-0 left-0 w-full h-2.5 bg-gray-800 z-10">
+        <div className="h-full bg-indigo-500 transition-all duration-300 ease-out" style={{ width: "50%" }} />
       </div>
-      <div className="absolute inset-0 md:hidden">
-        <img
-          src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/MOBILE%20BACKGROUND.jpg-PHaF8vfpeVmOjN6jtm4jvvI91pnyCR.jpeg"
-          alt="Mobile Background"
-          className="w-full h-full object-cover"
-        />
-      </div>
+      <div className="absolute top-6 right-6 text-indigo-500 text-base font-medium z-10">50%</div>
 
-      <div className="relative z-10">
-        <ProgressBar progress={50} />
+      <div className="relative z-10 min-h-screen">
+        {/* Main Container */}
+        <div className="max-w-[1136px] mx-auto px-4 pt-24">
+          {/* Top nav Back */}
+          <div className="flex items-center gap-4 text-white mb-28">
+            <button
+              onClick={handlePrev}
+              className="rounded-full border border-white/20 hover:bg-white/10 p-2 transition-colors"
+            >
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <div className="text-xl font-medium">
+              Step <span className="text-white">2</span> <span className="text-gray-600">of 4</span>
+            </div>
+          </div>
 
-        <div className="min-h-screen flex flex-col justify-center px-4 py-8">
-          <div className="flex-1">
-            <div className="max-w-5xl mx-auto">
-              {/* Step Indicator */}
-              <div className="flex items-center mb-16 text-white">
-                <button onClick={handlePrev} className="flex items-center justify-center rounded-full mr-3">
-                  <ArrowLeftCircle className="w-8 h-8" />
-                </button>
-                <span className="text-sm">Step 2 of 4</span>
-              </div>
-
-              {/* Program Overview - From old design */}
-              <div className="bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-700">
-                <h2 className="text-2xl font-bold text-white mb-4">Program Overview</h2>
-                <p className="text-gray-300 leading-relaxed">
-                  This program provides users with access to a range of services, including [insert specific services here,
-                  e.g., online educational resources, a trading platform, software tools, a social network, etc.]. Users may
-                  be required to create an account to access certain features. The program is designed for personal and
-                  non-commercial use. All content, trademarks, and intellectual property associated with the services are
-                  owned or licensed by us. Users are responsible for their account activity and any content they submit.
+          {/* Main Content Card */}
+          <div className="bg-black/70 rounded-[48px] border border-indigo-500/50 backdrop-blur-2xl p-6 mb-8">
+            {/* Program Overview */}
+            <div className="rounded-3xl border border-gray-600 p-6 mb-7">
+              <div className="max-w-[1046px] mx-auto">
+                <h2 className="text-4xl font-normal text-white text-center mb-6">Program Overview</h2>
+                <p className="text-white text-sm font-normal leading-7 tracking-tight text-center max-w-[976px] mx-auto">
+                  This program provides users with access to a range of services, including [Insert specific services
+                  here, e.g., online educational resources, a trading platform, software tools, a social network, etc.].
+                  Users may be required to create an account to access certain features. The program is designed for
+                  personal and non-commercial use. All content, trademarks, and intellectual property associated with
+                  the services are owned or licensed by us. Users are responsible for their account activity and any
+                  content they submit.
                 </p>
               </div>
+            </div>
 
-              {/* Terms & Conditions - From old design */}
-              <div className="bg-gray-800 bg-opacity-50 backdrop-blur-sm rounded-2xl p-6 mb-6 border border-gray-700">
-                <h2 className="text-2xl font-bold text-white mb-4">Terms & Conditions</h2>
-                <div className="text-gray-300 text-sm space-y-4">
+            {/* Terms & Conditions */}
+            <div className=" rounded-3xl border border-gray-600 p-6 mb-7">
+              <h2 className="text-4xl font-normal text-white text-center mb-8">Terms & Conditions</h2>
+
+              <div className="bg-gray-950 rounded-3xl border border-gray-600 p-9 max-h-[1116px] overflow-y-auto">
+                <div className="text-white text-xs text-left leading-tight tracking-tight space-y-4">
                   <div>
-                    <h3 className="font-semibold text-white mb-2">1. Acceptance of Terms</h3>
-                    <p>
-                      By accessing or using our services, you agree to be bound by these Terms and Conditions ("Terms" ). If
-                      you do not agree to these Terms, you may not use our services.
-                    </p>
+                    <span className="font-bold">
+                      1. Acceptance of Terms
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      By accessing or using our services, you agree to be bound by these Terms and Conditions ("Terms").
+                      If you do not agree to these Terms, you may not access or use our services.
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">2. Use of Services</h3>
-                    <p>
+                    <span className="font-bold">
+                      2. Use of Services
+                      <br />
+                    </span>
+                    <span className="font-normal">
                       Our services are intended for your personal and non-commercial use. You may not modify, copy,
                       distribute, transmit, display, perform, reproduce, publish, license, create derivative works from,
                       transfer, or sell any information, software, products or services obtained from our services.
-                    </p>
-                  </div >
-
-                  <div>
-                    <h3 className="font-semibold text-white mb-2">3. Account Registration</h3>
-                    <p>You may be required to register an account to access certain features of our services.</p>
-                    <p>
-                      You agree to provide accurate, current, and complete information during the registration process and to
-                      update such information to keep it accurate.
-                    </p>
-                    <p>
-                      You are responsible for safeguarding your account password. You agree not to disclose your password to
-                      any third party.
-                    </p>
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">4. User Content</h3>
-                    <p>
-                      You are solely responsible for any content you submit, post, or display on or through our services
-                      ("User Content").
-                    </p>
-                    <p>
-                      You grant us a non-exclusive, worldwide, royalty-free, perpetual, irrevocable, and transferable license
-                      to use, reproduce, distribute, prepare derivative works of, display, and perform such User Content.
-                    </p>
+                    <span className="font-bold">
+                      3. Account Registration
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      You may be required to register an account to access certain features of our services.
+                      <br />
+                      You agree to provide accurate, current, and complete information during the registration process
+                      and to update such information to keep it accurate, current, and complete.
+                      <br />
+                      You are responsible for safeguarding your account password. You agree not to disclose your
+                      password to any third party.
+                      <br />
+                      You agree to take sole responsibility for any activities or actions taken under your account,
+                      whether or not you have authorized such activities or actions.
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-2">5. Prohibited Conduct</h3>
-                    <p>You agree not to engage in any of the following prohibited activities:</p>
-                    <p>Violate any national law, regulation, ordinance, directive, or policy;</p>
-                    <p>
-                      Infringe any patent, trademark, trade secret, copyright, right of publicity, or other right of any other
-                      person or entity;
-                    </p>
-                  </div>
-                  {/* ... (rest of the terms from your old code) */}
-                  <div>
-                    <h3 className="font-semibold text-white mb-3">6. Prohibited Conduct</h3>
-                    <p className="leading-relaxed">You agree not to use our services for any illegal purpose.</p>
+                    <span className="font-bold">
+                      4. Intellectual Property
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      The content, trademarks, service marks, and logos contained in our services are owned by or
+                      licensed to us and are subject to copyright and other intellectual property rights.
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">7. Disclaimer of Warranties</h3>
-                    <p className="leading-relaxed">
-                      Our services are provided to you "as is" and "as available" basis. We make no warranties, express or
-                      implied, including, but not limited to, implied warranties of merchantability, fitness for a
+                    <span className="font-bold">
+                      5. User Content
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      You are responsible for any content you submit, post, or display on or through our services ("User
+                      Content").
+                      <br />
+                      By submitting User Content, you grant us a non-exclusive, worldwide, royalty-free, perpetual,
+                      irrevocable, sublicensable, and transferable license to use, reproduce, modify, adapt, publish,
+                      translate, create derivative works from, distribute, perform, and display such User Content.
+                      <br />
+                      You represent and warrant that you have the right to grant the license set out above.
+                      <br />
+                      <br />
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="font-bold">
+                      6. Prohibited Conduct
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      You agree not to:
+                      <br />
+                      Use our services for any illegal purpose.
+                      <br />
+                      Transmit any material that is unlawful, harmful, threatening, abusive, harassing, tortious,
+                      defamatory, vulgar, obscene, libelous, invasive of another's privacy, hateful, or racially,
+                      ethnically, or otherwise objectionable.
+                      <br />
+                      Impersonate any person or entity, or falsely state or otherwise misrepresent your affiliation with
+                      a person or entity.
+                      <br />
+                      Interfere with or disrupt our services or servers or networks connected to our services.
+                      <br />
+                      <br />
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="font-bold">
+                      7. Disclaimer of Warranties
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      Our services are provided on an "as is" and "as available" basis. We make no warranties, express
+                      or implied, including, but not limited to, implied warranties of merchantability, fitness for a
                       particular purpose, and non-infringement.
-                    </p>
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">8. Limitation of Liability</h3>
-                    <p className="leading-relaxed">
-                      We will not be liable for any direct, indirect, incidental, special, consequential or exemplary
+                    <span className="font-bold">
+                      8. Limitation of Liability
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      We will not be liable for any direct, indirect, incidental, special, consequential, or exemplary
                       damages, including but not limited to, damages for loss of profits, goodwill, use, data, or other
                       intangible losses, resulting from your use of our services.
-                    </p>
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">9. Indemnification</h3>
-                    <p className="leading-relaxed">
-                      You agree to indemnify and hold us harmless from any claim or demand, including reasonable attorneys'
-                      fees, made by any third party due to or arising out of your use of our services, your violation of
-                      these Terms, or your violation of the rights of another.
-                    </p>
+                    <span className="font-bold">
+                      9. Indemnification
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      You agree to indemnify and hold us harmless from any claim or demand, including reasonable
+                      attorneys' fees, made by any third party due to or arising out of your use of our services, your
+                      violation of these Terms, or your violation of any rights of another.
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">10. Changes to Terms</h3>
-                    <p className="leading-relaxed">
-                      We reserve the right to modify these Terms at any time. If we make material changes to these Terms, we
-                      will notify you by email or through a notice on our services. Your continued use of our services after
-                      the effective date of the revised Terms constitutes your acceptance of the revised Terms.
-                    </p>
+                    <span className="font-bold">
+                      10. Changes to Terms
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      We reserve the right to modify these Terms at any time. If we make material changes to these
+                      Terms, we will notify you by email or through a notice on our services. Your continued use of our
+                      services after the effective date of the revised Terms constitutes your acceptance of the revised
+                      Terms.
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">11. Governing Law</h3>
-                    <p className="leading-relaxed">
-                      These Terms shall be governed by and construed in accordance with the laws of [Your Country/State],
-                      without regard to its conflict of law provisions.
-                    </p>
+                    <span className="font-bold">
+                      11. Governing Law
+                      <br />
+                    </span>
+                    <span className="font-normal">
+                      These Terms shall be governed by and construed in accordance with the laws of [Your
+                      Country/State], without regard to its conflict of law provisions.
+                      <br />
+                      <br />
+                    </span>
                   </div>
 
                   <div>
-                    <h3 className="font-semibold text-white mb-3">12. Contact Us</h3>
-                    <p className="leading-relaxed">
+                    <span className="font-bold">
+                      12. Contact Us
+                      <br />
+                    </span>
+                    <span className="font-normal">
                       If you have any questions about these Terms, please contact us at [Lorem Ipsum].
-                    </p>
+                    </span>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Pricing - From old design */}
-              <div className="bg-gray-900 bg-opacity-40 backdrop-blur-xl border border-gray-700 rounded-2xl p-6 mb-8">
-                <h2 className="text-2xl font-bold text-white mb-8 text-center">Pricing</h2>
+            {/* Pricing */}
+            <div className=" rounded-3xl border border-gray-600 p-6">
+              <h2 className="text-4xl font-normal text-white text-center mb-12">Pricing</h2>
 
-                <div className="grid md:grid-cols-3 items-end gap-4 relative">
-                  {plans.map((plan, index) => (
-                    <PricingCard
-                      key={plan.id}
-                      plan={plan}
-                      selectedPlan={selectedPlan}
-                      onSelect={setSelectedPlan}
-                      isFeatured={index === 1} // 'Premium' plan is featured in old design
+              <div className="flex justify-center items-end gap-8">
+                {/* Basic Plan */}
+                <div className="w-80 h-[560px] bg-gray-950 rounded-xl border border-gray-600 p-6 relative">
+                  <div className="w-16 h-8 mx-auto mb-8 rounded-full border border-indigo-400 flex items-center justify-center">
+                    <span className="text-indigo-400 text-xs font-normal">Basic</span>
+                  </div>
+
+                  <div className="text-center mb-8">
+                    <span className="text-white text-7xl font-bold">$0</span>
+                  </div>
+
+                  <div className="text-white text-[10px] font-normal leading-normal mb-8">
+                    <p>Designed for individual, non-commercial use.</p>
+                    <p>Includes access to core services, such as:</p>
+                    <p>Limited access to online educational resources</p>
+                    <p>Basic trading tools</p>
+                    <p>A restricted social network profile</p>
+                  </div>
+
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                    <button
+                      onClick={() => setSelectedPlan("basic")}
+                      className={`w-6 h-6 rounded-full border-2 ${selectedPlan === "basic" ? "border-indigo-500 bg-indigo-500" : "border-slate-600 bg-gray-800"
+                        }`}
                     />
-                  ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* Continue Button - Text changed to "Start Application" as per old design */}
-              <div className="text-center mb-16">
-                <button
-                  onClick={handleNext}
-                  className="w-full px-8 py-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
-                >
-                  Start Application
-                </button>
+                {/* Premium Plan - Featured */}
+                <div className="w-96 h-[624px] rounded-xl border border-gray-600 p-6 relative transform scale-105">
+                  <div className="w-20 h-8 mx-auto mb-8 rounded-full border border-indigo-400 flex items-center justify-center">
+                    <span className="text-indigo-400 text-sm font-normal">Premium</span>
+                  </div>
+
+                  <div className="text-center mb-8">
+                    <span className="text-white text-8xl font-bold">$299</span>
+                  </div>
+
+                  <div className="text-white text-xs font-normal leading-relaxed mb-8">
+                    <p>Designed for individual, non-commercial use.</p>
+                    <p>Includes access to core services, such as:</p>
+                    <p>Limited access to online educational resources</p>
+                    <p>Basic trading tools</p>
+                    <p>A restricted social network profile</p>
+                  </div>
+
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                    <button
+                      onClick={() => setSelectedPlan("premium")}
+                      className={`w-6 h-6 rounded-full border-2 ${selectedPlan === "premium" ? "border-indigo-500 bg-indigo-500" : "border-slate-600 bg-gray-800"
+                        }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Class Plan */}
+                <div className="w-80 h-[560px] bg-gray-950 rounded-xl border border-gray-600 p-6 relative">
+                  <div className="w-16 h-8 mx-auto mb-8 rounded-full border border-indigo-400 flex items-center justify-center">
+                    <span className="text-indigo-400 text-xs font-normal">Class</span>
+                  </div>
+
+                  <div className="text-center mb-8">
+                    <span className="text-white text-7xl font-bold">$999</span>
+                  </div>
+
+                  <div className="text-white text-[10px] font-normal leading-normal mb-8">
+                    <p>Designed for individual, non-commercial use.</p>
+                    <p>Includes access to core services, such as:</p>
+                    <p>Limited access to online educational resources</p>
+                    <p>Basic trading tools</p>
+                    <p>A restricted social network profile</p>
+                  </div>
+
+                  <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+                    <button
+                      onClick={() => setSelectedPlan("class")}
+                      className={`w-6 h-6 rounded-full border-2 ${selectedPlan === "class" ? "border-indigo-500 bg-indigo-500" : "border-slate-600 bg-gray-800"
+                        }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Start Application Button */}
+          <button
+            onClick={handleNext}
+            className="w-full h-16 px-8 py-2.5 bg-indigo-500 rounded-xl text-white text-xl font-medium hover:bg-indigo-600 transition-colors mb-8"
+          >
+            Start Application
+          </button>
         </div>
       </div>
     </div>

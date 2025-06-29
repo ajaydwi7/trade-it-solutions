@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, NavLink } from "react-router-dom"
 import { useAuth } from "../contexts/AuthContext"
 import {
   User,
@@ -206,23 +206,18 @@ const Dashboard = () => {
 
           {/* Navigation Items */}
           <nav className="space-y-2 mb-8">
-            {sidebarItems.map((item, index) => (
-              <div
-                key={index}
-                onClick={item.onClick}
-                className="flex items-center justify-between p-3 rounded-lg bg-gray-700 bg-opacity-30 hover:bg-opacity-50 transition-colors cursor-pointer"
-              >
-                <div className="flex items-center">
-                  <item.icon className="w-5 h-5 text-gray-300 mr-3" />
-                  <span className="text-white">{item.label}</span>
-                </div>
-                {item.status && (
-                  <div
-                    className={`w-3 h-3 rounded-full ${item.color === "green" ? "bg-green-500" : "bg-orange-500"}`}
-                  ></div>
-                )}
-              </div>
-            ))}
+            <NavLink to="/dashboard/personal" className="flex items-center p-3 rounded-lg bg-gray-700 bg-opacity-30 hover:bg-opacity-50 transition-colors text-white" activeClassName="bg-opacity-50 font-bold">
+              <User className="w-5 h-5 text-gray-300 mr-3" />
+              Personal Information
+            </NavLink>
+            <NavLink to="/dashboard/professional" className="flex items-center p-3 rounded-lg bg-gray-700 bg-opacity-30 hover:bg-opacity-50 transition-colors text-white" activeClassName="bg-opacity-50 font-bold">
+              <Briefcase className="w-5 h-5 text-gray-300 mr-3" />
+              Professional Information
+            </NavLink>
+            <NavLink to="/dashboard/settings" className="flex items-center p-3 rounded-lg bg-gray-700 bg-opacity-30 hover:bg-opacity-50 transition-colors text-white" activeClassName="bg-opacity-50 font-bold">
+              <Settings className="w-5 h-5 text-gray-300 mr-3" />
+              Settings
+            </NavLink>
           </nav>
 
           {/* Logout */}

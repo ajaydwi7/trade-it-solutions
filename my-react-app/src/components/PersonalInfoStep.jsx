@@ -17,8 +17,14 @@ const PersonalInfoStep = () => {
   const [touched, setTouched] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const totalMainSteps = 4;
+  const personalInfoSubSteps = 4;
+  const currentMainStep = 1; // Always 1 for PersonalInfoStep
+
   const calculateProgress = () => {
-    return (currentSubStep - 1) * 7.5 + 7.5
+    // Each main step is 25%. Each substep in step 1 is 25/4 = 6.25%
+    const subStepProgress = ((currentSubStep - 1) / personalInfoSubSteps) * (100 / totalMainSteps);
+    return Math.round(subStepProgress + (currentMainStep - 1) * (100 / totalMainSteps));
   }
 
   // Function to get content and validation for each step
@@ -186,8 +192,7 @@ const PersonalInfoStep = () => {
       </div>
 
       <div className="relative z-10">
-        <ProgressBar progress={calculateProgress()} />
-
+        <ProgressBar progress={calculateProgress()} showPercent={true} />
         <div className="min-h-screen flex flex-col justify-center px-4 py-8">
           <div className="w-full max-w-2xl mx-auto flex-1 flex flex-col justify-center">
             {/* Step Indicator */}
@@ -195,7 +200,7 @@ const PersonalInfoStep = () => {
               <button onClick={handlePrev} className="flex items-center justify-center rounded-full mr-3">
                 <ArrowLeftCircle className="w-8 h-8" />
               </button>
-              <span className="text-sm">Step {currentSubStep} of 4</span>
+              <span className="text-sm">Step 1 of 4</span>
             </div>
 
             {/* Form Content */}

@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
+import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import Application from "../models/Application.js";
+
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 export const registerUser = async (req, res) => {
   try {
@@ -54,7 +57,6 @@ export const registerUser = async (req, res) => {
 };
 
 export const loginUser = async (req, res) => {
-  console.log("Login request body:", req.body);
   try {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
@@ -62,6 +64,13 @@ export const loginUser = async (req, res) => {
     if (!user) {
       console.log("User not found:", email);
       return res.status(401).json({ error: "Invalid credentials" });
+    }
+
+    // Block admin login here
+    if (user.role === "admin" || user.role === "super-admin") {
+      return res
+        .status(403)
+        .json({ error: "Please use the admin login page." });
     }
 
     // Compare passwords using the model method
@@ -73,7 +82,6 @@ export const loginUser = async (req, res) => {
     }
 
     let application = await Application.findOne({ userId: user._id });
-    console.log("Application found for user:", application);
 
     const isSubmitted =
       application &&
@@ -99,6 +107,49 @@ export const loginUser = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ error: error.message });
+  }
+};
+
+// Google Authentication
+export const googleAuthController = async (req, res) => {
+  try {
+    const { credential } = req.body;
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
+
+    // Find or create user
+    let user = await User.findOne({ email: payload.email });
+    if (!user) {
+      user = await User.create({
+        firstName: payload.given_name || "",
+        lastName: payload.family_name || "",
+        email: payload.email,
+        password: Math.random().toString(36), // random password, not used
+        profileComplete: true,
+      });
+    }
+
+    // Generate JWT
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "30d",
+    });
+
+    res.json({
+      token,
+      userId: user._id,
+      user: {
+        _id: user._id,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        profileComplete: user.profileComplete,
+      },
+    });
+  } catch (error) {
+    res.status(401).json({ error: "Google authentication failed" });
   }
 };
 

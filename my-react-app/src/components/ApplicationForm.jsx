@@ -101,7 +101,6 @@ const ApplicationForm = () => {
 
     } catch (error) {
       console.error('Error starting recording:', error)
-      alert('Could not access camera/microphone. Please check permissions.')
       toast.error('Could not access camera/microphone. Please check permissions.');
     }
   }
@@ -708,7 +707,7 @@ const ApplicationForm = () => {
       </div>
 
       <div className="relative z-10">
-        <ProgressBar progress={calculateProgress()} />
+        <ProgressBar progress={calculateProgress()} showPercent={true} />
 
         <div className="min-h-screen flex items-center justify-center px-4 pt-8">
           <div className="w-full max-w-6xl">
